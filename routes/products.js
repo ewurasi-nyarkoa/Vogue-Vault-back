@@ -74,6 +74,24 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     res.status(500).json({ msg: "Server Error" });
   }
 });
+// ✅ GET products by category
+router.get("/category/:category", async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    // Find products where the category matches (case-insensitive)
+    const products = await Product.find({ category }).populate("category");
+
+    if (!products.length) {
+      return res.status(404).json({ msg: "No products found in this category" });
+    }
+
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ msg: "Server Error" });
+  }
+});
+
 
 // ✅ DELETE a product by ID
 router.delete("/:id", async (req, res) => {
