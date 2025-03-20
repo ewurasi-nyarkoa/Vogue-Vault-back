@@ -78,20 +78,21 @@ router.put("/:id", upload.single("image"), async (req, res) => {
 // ✅ GET products by category
 router.get("/category/:category", async (req, res) => {
   try {
-    const { category } = req.params;
+      let category = req.params.category.trim(); // Trim spaces and tabs
 
-    // Find products where the category matches (case-insensitive)
-    const products = await Product.find({ category }).populate("category");
+      const products = await Product.find({ category }).populate("category");
 
-    if (!products.length) {
-      return res.status(404).json({ msg: "No products found in this category" });
-    }
+      if (products.length === 0) {
+          return res.status(404).json({ msg: "No products found in this category" });
+      }
 
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ msg: "Server Error" });
+      res.json(products);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ msg: "Server error" });
   }
 });
+
 
 
 // ✅ DELETE a product by ID
