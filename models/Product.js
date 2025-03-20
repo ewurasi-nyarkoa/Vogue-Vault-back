@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+// import cloudinary from "../config/cloudinary.js";
 
 const ProductSchema = new mongoose.Schema({
   name: { type: String, required: true },
