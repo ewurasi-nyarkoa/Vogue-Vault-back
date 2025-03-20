@@ -18,7 +18,8 @@ router.post("/", upload.single("image"), async (req, res) => {
       name,
       description,
       price,
-      category,
+      // category,
+      category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
       stock,
       image, // Save image path in DB
     });
