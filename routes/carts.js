@@ -4,51 +4,56 @@ import Product from "../models/Product.js";
 
 const router = express.Router();
 
+
+router.get("/:userId", async (req, res) => {
+  try {
+    const cart = await Cart.findOne({ userId: req.params.userId }).populate("items.productId");
+    if (!cart) {
+      return res.status(200).json({ items: [] }); // Return an empty cart if none exists
+    }
+    res.status(200).json(cart);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // ✅ Add item to cart
 router.post("/:userId", async (req, res) => {
   try {
     const { productId, quantity } = req.body;
 
-    console.log("📌 Received request - User ID:", req.params.userId);
-    console.log("📌 Product ID:", productId);
-    console.log("📌 Quantity:", quantity);
+    // Check if the product exists
+    const product = await Product.findById(productId);
+    if (!product) return res.status(404).json({ msg: "Product not found" });
 
-    if (!productId || !quantity) {
-      return res.status(400).json({ message: "Product ID and quantity are required." });
-    }
-
+    // Find the cart for the user or create a new one
     let cart = await Cart.findOne({ userId: req.params.userId });
 
     if (!cart) {
-      console.log("🛒 No cart found for this user, creating a new cart...");
-      cart = new Cart({ userId: req.params.userId, items: [] });
-    }
-
-    console.log("🔍 Checking if product exists in DB...");
-    const product = await Product.findById(productId);
-    if (!product) {
-      console.log("❌ Product not found:", productId);
-      return res.status(404).json({ message: "Product not found." });
-    }
-
-    console.log("✅ Product found! Adding to cart...");
-
-    const itemIndex = cart.items.findIndex((item) => item.productId.toString() === productId);
-    if (itemIndex > -1) {
-      cart.items[itemIndex].quantity += quantity;
+      cart = new Cart({
+        userId: req.params.userId,
+        items: [{ productId, quantity }],
+      });
     } else {
-      cart.items.push({ productId, quantity });
+      // Check if the product is already in the cart
+      const itemIndex = cart.items.findIndex((item) => item.productId.toString() === productId);
+
+      if (itemIndex > -1) {
+        // Update the quantity if the product is already in the cart
+        cart.items[itemIndex].quantity += quantity;
+      } else {
+        // Add new product to cart
+        cart.items.push({ productId, quantity });
+      }
     }
 
     await cart.save();
-    console.log("✅ Item added to cart successfully!");
-    res.status(200).json({ message: "Item added to cart", cart });
-
+    res.status(200).json(cart);
   } catch (err) {
-    console.error("❌ ERROR ADDING TO CART:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 
 // ✅ Get cart for a user

@@ -42,7 +42,7 @@ router.post(
       await user.save();
 
       const payload = {id: user._id };
-      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
+      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1hr" });
 
       res.json({ token, user });
     } catch (err) {
